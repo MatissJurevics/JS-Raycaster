@@ -64,10 +64,21 @@ const clearScreen = () => {
     context.fillStyle = 'lightblue'
     context.fillRect(0, 0, screenWidth, screenHeight)
 }
-// This function is used for player movement
+// This function is used for player movement and collision detection
 const movePlayer = () => {
-    player.x += Math.cos(player.angle) * player.speed;
-    player.y += Math.sin(player.angle) * player.speed;
+    let futureX = Math.floor((player.x += Math.cos(player.angle) * player.speed) / CELL_SIZE)
+    let futureY = Math.floor((player.y += Math.sin(player.angle) * player.speed) / CELL_SIZE)
+
+    wall = map[futureY][futureX]
+
+    if(wall === 0) {
+        player.x += Math.cos(player.angle) * player.speed;
+        player.y += Math.sin(player.angle) * player.speed;
+    } else {
+        player.x -= Math.cos(player.angle) * player.speed;
+        player.y -= Math.sin(player.angle) * player.speed;
+    }
+
 }
 
 const outOfBounds = (x,y) => {
