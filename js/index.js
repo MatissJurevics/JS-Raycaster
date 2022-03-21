@@ -7,6 +7,11 @@ canvas.setAttribute('width', screenWidth);
 canvas.setAttribute('height', screenHeight);
 document.body.appendChild(canvas)
 
+// defining this before FOV as FOV relies on this function
+const toRadians = (degree) => {
+    return (degree * Math.PI) / 180
+}
+
 // setting important data neccesary for the function of the engine
 // TICK :       The amount of time in milliseconds for a new frame to be created
 // context :    the context of the canvas
@@ -16,6 +21,7 @@ document.body.appendChild(canvas)
 const TICK = 30;
 const context = canvas.getContext('2d');
 const CELL_SIZE = 64;
+const FOV = toRadians(60);
 const map = [
     [1 , 1 , 1 , 1 , 1 , 1 , 1 , 1],
     [1 , 0 , 0 , 0 , 0 , 0 , 0 , 1],
@@ -47,12 +53,65 @@ const clearScreen = () => {
     context.fillRect(0, 0, screenWidth, screenHeight)
 }
 // This function is used for player movement
-const movePlayer = () => {}
-const getRays = () => {}
+const movePlayer = () => {
+    player.x += Math.cos(player.angle) * player.speed;
+    player.y += Math.sin(player.angle) * player.speed;
+}
+
+const outOfBounds = (x,y) => {
+    return x < 0 || x >= map[0].length || y < 0 || y >= map.length
+}
+const distance = (x1,y1,x2,y2) => {
+    return Math.sqrt(Math.pow((x2-x1), 2) + Math.pow((y2-y1), 2))
+}
+
+const getVCollision = (ang) => {
+    const right = Math.abs(Math.floor((ang - Math.PI / 2) / Math.PI) % 2);
+    const firstX = right ? Math.floor(player.x / CELL_SIZE) * CELL_SIZE + CELL_SIZE : Math.floor(player.x / CELL_SIZE) * CELL_SIZE
+    const firstY = player.y + (firstX - player.x) * Math.tan(ang)
+
+    const xA = right ? CELL_SIZE : -CELL_SIZE;
+    const yA = xA * Math.tan(ang)
+
+    let wall;
+    let nextX = firstX ;
+    let nextY = firstY;
+
+    while(!wall) {
+        const cellX = right ? Math.floor(nextX / CELL_SIZE) : Math.floor(nextX / CELL_SIZE) - 1;
+        const cellY =  Math.floor(nextY / CELL_SIZE);
+
+        if (outOfBounds(cellX, cellY)) {
+            wall = map[cellY][cellX]
+            if(!wall) {
+                nextX + xA;
+                nextY + yA;
+            }
+        }
+    }
+    return{angle, distance: distance(player.x, player.y,nextX, nextY), vertical: true}
+}
+
+const castRay = (angle) => {
+    const vCollision = getVCollision(angle);
+    const hCollision = getHCollision(angle);
+    return hCollision.distance >= vCollision.distance ? hCollision.distance : vCollision.distance;
+}
+
+const getRays = () => {
+    let initialAngle = player.angle - FOV / 2;
+    let numberOfRays = screenWidth;
+    let angleStep  = FOV / numberOfRays;
+    return Array.from({length: numberOfRays}, (_,i) => {
+        const angle = initialAngle + i * angleStep;
+        const ray = castRay(angle);
+        return ray
+    })
+}
 const renderScene = (rays) => {}
 // This function renders the minimap containing the map data inserted above
 // (I think the data is inserted above anyway lmao...)
-const renderMinimap = (posX=0,posY=0,scale=0.75,rays=[]) => {
+const renderMinimap = (posX=0,posY=0,scale=0.75,rays) => {
     // sets the size of each cell on the mini map (both height and width)
     const cellSize = scale * CELL_SIZE;
     // loops throught the first set of arrays on the 2d array (the rows)
@@ -121,3 +180,23 @@ const gameLoop = () => {
 
 // will run the game loop once every 30 milliseconds
 setInterval(gameLoop,TICK)
+
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowUp'){
+        player.speed = 2
+    };
+    if (e.key === 'ArrowDown'){
+        player.speed = -2
+    }
+})
+
+document.addEventListener('keyup', e => {
+    if(e.key === 'ArrowUp' || e.key === 'ArrowDown'){
+        player.speed = 0
+    }
+})
+
+document.addEventListener('mousemove', e => {
+    player.angle += toRadians(e.movementX)
+})
