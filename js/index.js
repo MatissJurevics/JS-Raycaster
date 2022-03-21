@@ -53,7 +53,7 @@ const COLORS = {
     rays: '#dddd00', 
     wallDark: '#666666',
     wallLight: '#888888',
-    floor: '#0ff',
+    floor: '#f4a460',
     ceiling: '#44f'
 }
 
@@ -66,9 +66,9 @@ const clearScreen = () => {
 }
 // This function is used for player movement and collision detection
 const movePlayer = () => {
-    let futureX = Math.floor((player.x += Math.cos(player.angle) * player.speed) / CELL_SIZE)
-    let futureY = Math.floor((player.y += Math.sin(player.angle) * player.speed) / CELL_SIZE)
-
+    let futureX = Math.floor((player.x += Math.cos(player.angle) * player.speed) / CELL_SIZE + 0.1)
+    let futureY = Math.floor((player.y += Math.sin(player.angle) * player.speed) / CELL_SIZE + 0.1)
+    console.log(player.x, player.y)
     wall = map[futureY][futureX]
 
     if(wall === 0) {
