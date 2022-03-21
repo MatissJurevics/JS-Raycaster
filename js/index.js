@@ -21,16 +21,25 @@ const toRadians = (degree) => {
 const TICK = 30;
 const context = canvas.getContext('2d');
 const CELL_SIZE = 64;
-const FOV = toRadians(60);
+const FOV = toRadians(80);
 const map = [
-    [1 , 1 , 1 , 1 , 1 , 1 , 1 , 1],
-    [1 , 0 , 0 , 0 , 0 , 0 , 0 , 1],
-    [1 , 0 , 1 , 0 , 0 , 0 , 0 , 1],
-    [1 , 0 , 1 , 0 , 1 , 1 , 0 , 1],
-    [1 , 0 , 0 , 0 , 1 , 0 , 0 , 1],
-    [1 , 1 , 0 , 0 , 1 , 0 , 0 , 1],
-    [1 , 0 , 0 , 0 , 0 , 0 , 0 , 1],
-    [1 , 1 , 1 , 1 , 1 , 1 , 1 , 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+
 
 ]
 const player = {
@@ -41,15 +50,18 @@ const player = {
 }
 const playerSize = 10;
 const COLORS = {
-    rays: '#dddd00'
-
+    rays: '#dddd00', 
+    wallDark: '#666666',
+    wallLight: '#888888',
+    floor: '#0ff',
+    ceiling: '#44f'
 }
 
 
 // Defining all the functions used in the gameloop 
 const clearScreen = () => {
     // sets display to red to make it clear the changes were made
-    context.fillStyle = 'blue'
+    context.fillStyle = 'lightblue'
     context.fillRect(0, 0, screenWidth, screenHeight)
 }
 // This function is used for player movement
@@ -59,43 +71,98 @@ const movePlayer = () => {
 }
 
 const outOfBounds = (x,y) => {
-    return x < 0 || x >= map[0].length || y < 0 || y >= map.length
+    return x < 0 || x >= map[0].length || y < 0 || y >= map.length;
 }
 const distance = (x1,y1,x2,y2) => {
-    return Math.sqrt(Math.pow((x2-x1), 2) + Math.pow((y2-y1), 2))
+    return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
 }
 
-const getVCollision = (ang) => {
-    const right = Math.abs(Math.floor((ang - Math.PI / 2) / Math.PI) % 2);
-    const firstX = right ? Math.floor(player.x / CELL_SIZE) * CELL_SIZE + CELL_SIZE : Math.floor(player.x / CELL_SIZE) * CELL_SIZE
-    const firstY = player.y + (firstX - player.x) * Math.tan(ang)
+const getVCollision = (angle) => {
+    const right = Math.abs(Math.floor((angle - Math.PI / 2) / Math.PI) % 2);
+    const firstX = right 
+        ? Math.floor(player.x / CELL_SIZE) * CELL_SIZE + CELL_SIZE 
+        : Math.floor(player.x / CELL_SIZE) * CELL_SIZE
+
+    const firstY = player.y + (firstX - player.x) * Math.tan(angle);
 
     const xA = right ? CELL_SIZE : -CELL_SIZE;
-    const yA = xA * Math.tan(ang)
+    const yA = xA * Math.tan(angle)
 
     let wall;
     let nextX = firstX ;
     let nextY = firstY;
 
     while(!wall) {
-        const cellX = right ? Math.floor(nextX / CELL_SIZE) : Math.floor(nextX / CELL_SIZE) - 1;
+        const cellX = right 
+            ? Math.floor(nextX / CELL_SIZE) 
+            : Math.floor(nextX / CELL_SIZE) - 1;
+
         const cellY =  Math.floor(nextY / CELL_SIZE);
 
         if (outOfBounds(cellX, cellY)) {
-            wall = map[cellY][cellX]
-            if(!wall) {
-                nextX + xA;
-                nextY + yA;
-            }
+            break;
+        }
+        wall = map[cellY][cellX]
+        if(!wall) {
+            nextX += xA;
+            nextY += yA;
+        } else {
+
         }
     }
-    return{angle, distance: distance(player.x, player.y,nextX, nextY), vertical: true}
+    return{
+        angle, 
+        distance: distance(player.x, player.y,nextX, nextY), 
+        vertical: true,
+    }
 }
+const getHCollision = (angle) => {
+    const up = Math.abs(Math.floor((angle / Math.PI)) % 2);
+    const firstY = up 
+        ? Math.floor(player.y / CELL_SIZE) * CELL_SIZE 
+        : Math.floor(player.y / CELL_SIZE) * CELL_SIZE + CELL_SIZE ;
+
+    const firstX = player.x + (firstY - player.y) / Math.tan(angle);
+
+    const yA = up ? -CELL_SIZE : CELL_SIZE;
+    const xA = yA / Math.tan(angle)
+
+    let wall;
+    let nextX = firstX ;
+    let nextY = firstY;
+
+    while(!wall) {
+        const cellY = up 
+            ? Math.floor(nextY / CELL_SIZE) -1
+            : Math.floor(nextY / CELL_SIZE) ;
+
+        const cellX =  Math.floor(nextX / CELL_SIZE);
+
+        if (outOfBounds(cellX, cellY)) {
+            break;
+        }
+        wall = map[cellY][cellX]
+        if(!wall) {
+            nextX += xA;
+            nextY += yA;
+        } else {
+
+        }
+    }
+    return{
+        angle, 
+        distance: distance(player.x, player.y,nextX, nextY), 
+        vertical: false,
+    }
+}
+
+
 
 const castRay = (angle) => {
     const vCollision = getVCollision(angle);
     const hCollision = getHCollision(angle);
-    return hCollision.distance >= vCollision.distance ? hCollision.distance : vCollision.distance;
+    
+    return  hCollision . distance  >=  vCollision . distance  ?  vCollision  :  hCollision ; 
 }
 
 const getRays = () => {
@@ -108,7 +175,28 @@ const getRays = () => {
         return ray
     })
 }
-const renderScene = (rays) => {}
+
+const fixFishEye = (distance, angle, playerAngle) => {
+    const diff = angle - playerAngle;
+    return distance * Math.cos(diff)
+}
+
+const renderScene = (rays) => {
+    rays.forEach((ray,i) => {
+        const distance = fixFishEye(ray.distance, ray.angle, player.angle);
+        const wallHeight = ((CELL_SIZE * 5) / distance) * 277  // arbitrary height, can be adjusted
+        context.fillStyle = ray.vertical ? COLORS.wallDark : COLORS.wallLight;
+        context.fillRect(i,(screenHeight/2)-wallHeight/2, 1, wallHeight)
+
+        // creates a floor
+        context.fillStyle = COLORS.floor;
+        context.fillRect(i,(screenHeight/2)+wallHeight/2,i,(screenHeight/2)-wallHeight/2)
+
+        // creates a ceiling 
+        context.fillStyle = COLORS.ceiling;
+        context.fillRect(i,0,i,(screenHeight/2)-wallHeight/2)
+    })
+}
 // This function renders the minimap containing the map data inserted above
 // (I think the data is inserted above anyway lmao...)
 const renderMinimap = (posX=0,posY=0,scale=0.75,rays) => {
@@ -175,7 +263,7 @@ const gameLoop = () => {
     movePlayer();
     const rays = getRays();
     renderScene(rays);
-    renderMinimap(0,0, 0.5, rays)
+    renderMinimap(0,0, 0.25, rays)
 }
 
 // will run the game loop once every 30 milliseconds
@@ -184,10 +272,18 @@ setInterval(gameLoop,TICK)
 
 document.addEventListener('keydown', e => {
     if (e.key === 'ArrowUp'){
-        player.speed = 2
+        player.speed = 3
     };
     if (e.key === 'ArrowDown'){
-        player.speed = -2
+        player.speed = -3
+    }
+})
+document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft'){
+        player.angle -= toRadians(5)
+    }
+    if (e.key === 'ArrowRight'){
+        player.angle += toRadians(5)
     }
 })
 
@@ -197,6 +293,6 @@ document.addEventListener('keyup', e => {
     }
 })
 
-document.addEventListener('mousemove', e => {
-    player.angle += toRadians(e.movementX)
-})
+// document.addEventListener('mousemove', e => {
+//     player.angle += toRadians(e.movementX)
+// })
