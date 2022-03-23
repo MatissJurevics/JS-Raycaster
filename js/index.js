@@ -18,20 +18,20 @@ const toRadians = (degree) => {
 // map :        this is a 2d array containing booleans that represent the presense
 //              of a wall
 // player :     This object contains information about the player on the map
-const TICK = 30;
+const TICK = 45;
 const context = canvas.getContext('2d');
 const CELL_SIZE = 64;
 const FOV = toRadians(80);
 const map = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 1, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
@@ -52,10 +52,31 @@ const playerSize = 10;
 const COLORS = {
     rays: '#dddd00', 
     wallDark: '#666666',
+    wallDarkSecondary: '#555555',
     wallLight: '#888888',
+    wallLightSecondary: '#777777',
     floor: '#f4a460',
     ceiling: '#44f'
 }
+const TEXTURE_RES = 16
+const texture = [
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1],
+    [1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1],
+    [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1],
+    [1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 1, 1, 1, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+]
 
 
 // Defining all the functions used in the gameloop 
@@ -68,7 +89,7 @@ const clearScreen = () => {
 const movePlayer = () => {
     let futureX = Math.floor((player.x += Math.cos(player.angle) * player.speed) / CELL_SIZE + 0.1)
     let futureY = Math.floor((player.y += Math.sin(player.angle) * player.speed) / CELL_SIZE + 0.1)
-    console.log(player.x, player.y)
+    
     wall = map[futureY][futureX]
 
     if(wall === 0) {
@@ -102,13 +123,14 @@ const getVCollision = (angle) => {
     let wall;
     let nextX = firstX ;
     let nextY = firstY;
+    let cellX, cellY
 
     while(!wall) {
-        const cellX = right 
+         cellX = right 
             ? Math.floor(nextX / CELL_SIZE) 
             : Math.floor(nextX / CELL_SIZE) - 1;
 
-        const cellY =  Math.floor(nextY / CELL_SIZE);
+         cellY =  Math.floor(nextY / CELL_SIZE);
 
         if (outOfBounds(cellX, cellY)) {
             break;
@@ -121,13 +143,21 @@ const getVCollision = (angle) => {
 
         }
     }
+    let mapcord
+    if (wall) {
+        mapcord = map[cellY][cellX]
+    }
+    const textureCol = Math.ceil(nextY % TEXTURE_RES) 
     return{
         angle, 
         distance: distance(player.x, player.y,nextX, nextY), 
         vertical: true,
+        textureCol,
+        mapcord,
     }
 }
 const getHCollision = (angle) => {
+    // Determines whether the ray is heading up or down
     const up = Math.abs(Math.floor((angle / Math.PI)) % 2);
     const firstY = up 
         ? Math.floor(player.y / CELL_SIZE) * CELL_SIZE 
@@ -141,13 +171,14 @@ const getHCollision = (angle) => {
     let wall;
     let nextX = firstX ;
     let nextY = firstY;
+    let cellX, cellY
 
     while(!wall) {
-        const cellY = up 
+        cellY = up 
             ? Math.floor(nextY / CELL_SIZE) -1
             : Math.floor(nextY / CELL_SIZE) ;
 
-        const cellX =  Math.floor(nextX / CELL_SIZE);
+        cellX =  Math.floor(nextX / CELL_SIZE);
 
         if (outOfBounds(cellX, cellY)) {
             break;
@@ -160,10 +191,17 @@ const getHCollision = (angle) => {
 
         }
     }
+    let mapcord
+    if (wall) {
+        mapcord = map[cellY][cellX]
+    }
+    const textureCol = Math.ceil(nextX % TEXTURE_RES)
     return{
         angle, 
         distance: distance(player.x, player.y,nextX, nextY), 
         vertical: false,
+        textureCol,
+        mapcord,
     }
 }
 
@@ -192,12 +230,36 @@ const fixFishEye = (distance, angle, playerAngle) => {
     return distance * Math.cos(diff)
 }
 
+const renderTexture = (ray, i, wallHeight) => {
+    let pixel = wallHeight / TEXTURE_RES // this might be kinda sketch
+    let startY = (screenHeight/2)-wallHeight/2
+
+    for (let j = 0; j < TEXTURE_RES; j++) {
+        if (ray.vertical) {
+            if (texture[j][ray.textureCol]) {
+                context.fillStyle = COLORS.wallDarkSecondary 
+            } else {
+                context.fillStyle = COLORS.wallDark 
+            }
+         } else {
+            if (texture[j][ray.textureCol]) {
+                context.fillStyle = COLORS.wallLightSecondary 
+            } else {
+                context.fillStyle = COLORS.wallLight 
+            }
+         }
+     
+         context.fillRect(i,startY, 1, pixel);
+         startY += pixel;
+    }
+
+}
+
 const renderScene = (rays) => {
     rays.forEach((ray,i) => {
         const distance = fixFishEye(ray.distance, ray.angle, player.angle);
         const wallHeight = ((CELL_SIZE * 5) / distance) * 277  // arbitrary height, can be adjusted
-        context.fillStyle = ray.vertical ? COLORS.wallDark : COLORS.wallLight;
-        context.fillRect(i,(screenHeight/2)-wallHeight/2, 1, wallHeight)
+        renderTexture(ray,i,wallHeight)
 
         // creates a floor
         context.fillStyle = COLORS.floor;
