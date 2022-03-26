@@ -4,7 +4,7 @@ A basic raycaster made using the cavas api. To move around the map use the arrow
 
 ### To Do 
 - Fix basic textures 
-- segment project into multiple files (Kinda hard to read through nearly 400 lines of scattered code)
+- segment project into multiple files
 - Implement better texturing
 - implement map creater and devtools
 blog: https://blog.saetom.xyz
