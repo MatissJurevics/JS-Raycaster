@@ -231,27 +231,33 @@ const fixFishEye = (distance, angle, playerAngle) => {
 }
 
 const renderTexture = (ray, i, wallHeight) => {
-    let pixel = wallHeight / TEXTURE_RES // this might be kinda sketch
+    // let pixel = wallHeight / TEXTURE_RES // this might be kinda sketch
     let startY = (screenHeight/2)-wallHeight/2
 
-    for (let j = 0; j < TEXTURE_RES; j++) {
-        if (ray.vertical) {
-            if (texture[j][ray.textureCol]) {
-                context.fillStyle = COLORS.wallDarkSecondary 
-            } else {
-                context.fillStyle = COLORS.wallDark 
-            }
-         } else {
-            if (texture[j][ray.textureCol]) {
-                context.fillStyle = COLORS.wallLightSecondary 
-            } else {
-                context.fillStyle = COLORS.wallLight 
-            }
-         }
+    // for (let j = 0; j < TEXTURE_RES; j++) {
+    //     if (ray.vertical) {
+    //         if (texture[j][ray.textureCol]) {
+    //             context.fillStyle = COLORS.wallDarkSecondary 
+    //         } else {
+    //             context.fillStyle = COLORS.wallDark 
+    //         }
+    //      } else {
+    //         if (texture[j][ray.textureCol]) {
+    //             context.fillStyle = COLORS.wallLightSecondary 
+    //         } else {
+    //             context.fillStyle = COLORS.wallLight 
+    //         }
+    //      }
+    // This causes massive amounts of lag
+    if (ray.vertical) {
+        context.fillStyle = COLORS.wallDark
+    } else {
+        context.fillStyle = COLORS.wallLight
+    };
      
-         context.fillRect(i,startY, 1, pixel);
-         startY += pixel;
-    }
+         context.fillRect(i,startY, 1, wallHeight);
+        //  startY += pixel;
+    
 
 }
 
@@ -262,12 +268,12 @@ const renderScene = (rays) => {
         renderTexture(ray,i,wallHeight)
 
         // creates a floor
-        context.fillStyle = COLORS.floor;
+        context.fillStyle = "#f4a460";
         context.fillRect(i,(screenHeight/2)+wallHeight/2,i,(screenHeight/2)-wallHeight/2)
 
         // creates a ceiling 
-        context.fillStyle = COLORS.ceiling;
-        context.fillRect(i,0,i,(screenHeight/2)-wallHeight/2)
+        // context.fillStyle = COLORS.ceiling;
+        // context.fillRect(i,0,i,(screenHeight/2)-wallHeight/2)
     })
 }
 // This function renders the minimap containing the map data inserted above
